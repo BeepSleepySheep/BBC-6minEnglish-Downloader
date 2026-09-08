@@ -610,7 +610,7 @@ def parse_download_links(ep: Episode, session: requests.Session) -> LinkMap:
             links['pdf'] = href
         if links['audio'] is None and text == 'download audio' and low.endswith('.mp3'):
             links['audio'] = href
-        if links['transcript'] is None and text == 'download transcript':
+        if links['transcript'] is None and 'transcript' in text and low.endswith('.pdf'):
             links['transcript'] = href
     if links['pdf'] is None:
         cands = [h for _, h in anchors if 'worksheet' in h.lower() and h.lower().endswith('.pdf')]
@@ -618,6 +618,8 @@ def parse_download_links(ep: Episode, session: requests.Session) -> LinkMap:
     if links['transcript'] is None:
         cands = [h for _, h in anchors if 'transcript' in h.lower() and h.lower().endswith('.pdf')]
         links['transcript'] = cands[0] if cands else None
+    if links['transcript'] is None and links['pdf'] and 'worksheet' not in links['pdf'].lower():
+        links['transcript'] = links['pdf']
     heads = session.head
     if links['pdf'] is None and links['audio'] is None and (links['transcript'] is None):
         base = f"https://downloads.bbc.co.uk/learningenglish/features/6min/{ep['code']}_6_minute_english_{prettify_title(ep['title'])}"
